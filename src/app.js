@@ -9,6 +9,7 @@ const purchaseRoutes = require("./routes/purchaseRoutes");
 const saleRoutes = require("./routes/saleRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const inventoryTransactionRoutes = require("./routes/inventoryTransactionRoutes");
+const customerRoutes = require("./routes/customerRoutes");
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/api/v1/purchases", purchaseRoutes);
 app.use("/api/v1/sales", saleRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
 app.use("/api/v1/inventory-transactions", inventoryTransactionRoutes);
+app.use("/api/v1/customers", customerRoutes);
 // Global Error Handler for catching JSON parsing errors
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
