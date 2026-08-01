@@ -66,9 +66,46 @@ const getRecentSales = async (req, res) => {
     }
 };
 
+const getTopSellingProducts = async (req, res) => {
+    try {
+        const products =
+            await dashboardService.getTopSellingProducts();
+
+        res.status(200).json({
+            success: true,
+            count: products.length,
+            data: products,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+const getRecentCustomers = async (req, res) => {
+    try {
+        const customers = await dashboardService.getRecentCustomers();
+
+        res.status(200).json({
+            success: true,
+            count: customers.length,
+            data: customers,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 module.exports = {
     getDashboardSummary,
     getLowStockProducts,
     getRecentPurchases,
     getRecentSales,
+    getTopSellingProducts,
+    getRecentCustomers
 };
