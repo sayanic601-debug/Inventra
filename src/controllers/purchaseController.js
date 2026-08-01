@@ -17,14 +17,23 @@ const createPurchase = async (req, res) => {
     }
 };
 
-const getAllPurchases = async (req,res) => {
+const getAllPurchases = async (req, res) => {
     try {
-        const purchases = await purchaseService.getAllPurchases();
+        const result =
+            await purchaseService.getAllPurchases(
+                req.query
+            );
+
         res.status(200).json({
             success: true,
-            count: purchases.length,
-            data: purchases,
+            count: result.purchases.length,
+            totalPurchases: result.totalPurchases,
+            currentPage: result.currentPage,
+            totalPages: result.totalPages,
+            limit: result.limit,
+            data: result.purchases,
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
