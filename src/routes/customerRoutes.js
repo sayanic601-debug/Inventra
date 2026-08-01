@@ -23,16 +23,32 @@ router.get(
     customerController.getCustomerById
 );
 
+router.get(
+    "/:id/purchase-history",
+    protect,
+    customerController.getCustomerPurchaseHistory
+);
+
+router.get(
+    "/:id/summary",
+    protect,
+    customerController.getCustomerSummary
+);
+
 router.put(
     "/:id",
     protect,
     customerController.updateCustomer
 );
 
+
+
 router.delete(
     "/:id",
     protect,
     customerController.deleteCustomer
 );
+
+
 
 module.exports = router;

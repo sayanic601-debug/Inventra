@@ -91,10 +91,50 @@ const deleteCustomer = async (req, res) => {
     }
 };
 
+const getCustomerPurchaseHistory = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const purchases =
+            await customerService.getCustomerPurchaseHistory(id);
+
+        res.status(200).json({
+            success: true,
+            count: purchases.length,
+            data: purchases,
+        });
+    } catch (error) {
+        res.status(404).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+const getCustomerSummary = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const summary = await customerService.getCustomerSummary(id);
+
+        res.status(200).json({
+            success: true,
+            data: summary,
+        });
+    } catch (error) {
+        res.status(404).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 module.exports = {
     createCustomer,
     getAllCustomers,
     getCustomerById,
     updateCustomer,
     deleteCustomer,
+    getCustomerPurchaseHistory,
+    getCustomerSummary,
 };
