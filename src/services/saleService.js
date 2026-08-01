@@ -3,6 +3,11 @@ const Product = require("../models/Product");
 const Customer = require("../models/Customer");
 const InventoryTransaction = require("../models/InventoryTransaction");
 
+
+// =====================================================
+// CREATE SALE
+// =====================================================
+
 const createSale = async (saleData) => {
     try {
         const {
@@ -42,15 +47,16 @@ const createSale = async (saleData) => {
             quantity,
             sellingPrice,
             totalAmount,
-            customerName: customerName || existingCustomer.name,
+            customerName:
+                customerName || existingCustomer.name,
         });
 
-        // Reduce stock
+        // Reduce product stock
         existingProduct.stock -= quantity;
 
         await existingProduct.save();
 
-        // Create Inventory transaction
+        // Create inventory transaction
         await InventoryTransaction.create({
             product,
             type: "STOCK_OUT",
@@ -61,23 +67,203 @@ const createSale = async (saleData) => {
         });
 
         return sale;
+
     } catch (error) {
         throw error;
     }
 };
 
-const getAllSales = async () => {
-    const sales = await Sale.find()
-        .populate("product", "name sku")
-        .populate("customer", "name email phone");
 
-    return sales;
+// =====================================================
+// GET ALL SALES
+// Supports:
+// - Customer Filter
+// - Product Filter
+// - Date Range Filter
+// - Sorting
+// - Pagination
+// =====================================================
+
+const getAllSales = async (query = {}) => {
+    try {
+        const filter = {};
+
+        // -----------------------------
+        // Pagination
+        // -----------------------------
+
+        const page = Math.max(
+            Number(query.page) || 1,
+            1
+        );
+
+        const limit = Math.max(
+            Number(query.limit) || 10,
+            1
+        );
+
+        const skip = (page - 1) * limit;
+
+
+        // -----------------------------
+        // Filter by Customer ID
+        // -----------------------------
+
+        if (query.customer) {
+            filter.customer = query.customer;
+        }
+
+
+        // -----------------------------
+        // Filter by Product ID
+        // -----------------------------
+
+        if (query.product) {
+            filter.product = query.product;
+        }
+
+
+        // -----------------------------
+        // Date Range Filter
+        // -----------------------------
+
+        if (query.startDate || query.endDate) {
+            filter.saleDate = {};
+
+            if (query.startDate) {
+                const startDate = new Date(
+                    query.startDate
+                );
+
+                filter.saleDate.$gte = startDate;
+            }
+
+            if (query.endDate) {
+                const endDate = new Date(
+                    query.endDate
+                );
+
+                // Include complete end date
+                endDate.setHours(
+                    23,
+                    59,
+                    59,
+                    999
+                );
+
+                filter.saleDate.$lte = endDate;
+            }
+        }
+
+
+        // -----------------------------
+        // Sorting
+        // -----------------------------
+
+        let sortOption = {
+            saleDate: -1,
+        };
+
+        if (query.sort === "newest") {
+            sortOption = {
+                saleDate: -1,
+            };
+        }
+
+        if (query.sort === "oldest") {
+            sortOption = {
+                saleDate: 1,
+            };
+        }
+
+        if (query.sort === "price_asc") {
+            sortOption = {
+                sellingPrice: 1,
+            };
+        }
+
+        if (query.sort === "price_desc") {
+            sortOption = {
+                sellingPrice: -1,
+            };
+        }
+
+        if (query.sort === "amount_asc") {
+            sortOption = {
+                totalAmount: 1,
+            };
+        }
+
+        if (query.sort === "amount_desc") {
+            sortOption = {
+                totalAmount: -1,
+            };
+        }
+
+
+        // -----------------------------
+        // Count Total Sales
+        // -----------------------------
+
+        const totalSales =
+            await Sale.countDocuments(filter);
+
+
+        // -----------------------------
+        // Get Sales
+        // -----------------------------
+
+        const sales = await Sale.find(filter)
+            .populate(
+                "product",
+                "name sku"
+            )
+            .populate(
+                "customer",
+                "name email phone"
+            )
+            .sort(sortOption)
+            .skip(skip)
+            .limit(limit);
+
+
+        // -----------------------------
+        // Calculate Total Pages
+        // -----------------------------
+
+        const totalPages = Math.ceil(
+            totalSales / limit
+        );
+
+
+        return {
+            sales,
+            totalSales,
+            currentPage: page,
+            totalPages,
+            limit,
+        };
+
+    } catch (error) {
+        throw error;
+    }
 };
+
+
+// =====================================================
+// GET SALE BY ID
+// =====================================================
 
 const getSaleBYId = async (id) => {
     const sale = await Sale.findById(id)
-        .populate("product", "name sku")
-        .populate("customer", "name email phone");
+        .populate(
+            "product",
+            "name sku"
+        )
+        .populate(
+            "customer",
+            "name email phone"
+        );
 
     if (!sale) {
         throw new Error("Sale not found");
@@ -86,136 +272,242 @@ const getSaleBYId = async (id) => {
     return sale;
 };
 
+
+// =====================================================
+// UPDATE SALE
+// =====================================================
+
 const updateSale = async (id, saleData) => {
     try {
-        const existingSale = await Sale.findById(id);
+        // Find existing sale
+        const existingSale =
+            await Sale.findById(id);
 
         if (!existingSale) {
             throw new Error("Sale not found");
         }
 
-        const product = await Product.findById(existingSale.product);
+
+        // Find product
+        const product =
+            await Product.findById(
+                existingSale.product
+            );
 
         if (!product) {
             throw new Error("Product not found");
         }
 
-        // If customer is being updated, check customer exists
+
+        // -----------------------------
+        // Update Customer
+        // -----------------------------
+
         if (saleData.customer) {
-            const existingCustomer = await Customer.findById(
-                saleData.customer
-            );
+            const existingCustomer =
+                await Customer.findById(
+                    saleData.customer
+                );
 
             if (!existingCustomer) {
-                throw new Error("Customer not found");
+                throw new Error(
+                    "Customer not found"
+                );
             }
 
-            existingSale.customer = saleData.customer;
+            existingSale.customer =
+                saleData.customer;
 
-            // Update customer name if not provided
             existingSale.customerName =
-                saleData.customerName || existingCustomer.name;
+                saleData.customerName ||
+                existingCustomer.name;
         }
 
-        const oldQuantity = existingSale.quantity;
+
+        // -----------------------------
+        // Calculate Quantity Difference
+        // -----------------------------
+
+        const oldQuantity =
+            existingSale.quantity;
 
         const newQuantity =
             saleData.quantity !== undefined
                 ? saleData.quantity
                 : oldQuantity;
 
-        const quantityDifference = newQuantity - oldQuantity;
+        const quantityDifference =
+            newQuantity - oldQuantity;
 
-        // Check if enough stock is available
-        // when increasing sale quantity
+
+        // -----------------------------
+        // Check Stock
+        // -----------------------------
+
         if (
             quantityDifference > 0 &&
             product.stock < quantityDifference
         ) {
-            throw new Error("Insufficient stock for update");
+            throw new Error(
+                "Insufficient stock for update"
+            );
         }
 
-        // Adjust product stock
+
+        // -----------------------------
+        // Adjust Product Stock
+        // -----------------------------
+
         product.stock -= quantityDifference;
 
         await product.save();
 
-        // Update sale quantity
-        existingSale.quantity = newQuantity;
 
-        // Update selling price
-        if (saleData.sellingPrice !== undefined) {
-            existingSale.sellingPrice = saleData.sellingPrice;
+        // -----------------------------
+        // Update Sale Quantity
+        // -----------------------------
+
+        existingSale.quantity =
+            newQuantity;
+
+
+        // -----------------------------
+        // Update Selling Price
+        // -----------------------------
+
+        if (
+            saleData.sellingPrice !== undefined
+        ) {
+            existingSale.sellingPrice =
+                saleData.sellingPrice;
         }
 
-        // Update customer name if provided
-        if (saleData.customerName !== undefined) {
-            existingSale.customerName = saleData.customerName;
+
+        // -----------------------------
+        // Update Customer Name
+        // -----------------------------
+
+        if (
+            saleData.customerName !== undefined
+        ) {
+            existingSale.customerName =
+                saleData.customerName;
         }
 
-        // Recalculate total amount
+
+        // -----------------------------
+        // Recalculate Total Amount
+        // -----------------------------
+
         existingSale.totalAmount =
             existingSale.quantity *
             existingSale.sellingPrice;
 
+
+        // Save Updated Sale
         await existingSale.save();
 
-        // Update inventory transaction
+
+        // -----------------------------
+        // Update Inventory Transaction
+        // -----------------------------
+
         const inventoryTransaction =
             await InventoryTransaction.findOne({
-                referenceId: existingSale._id,
-                referenceType: "SALE",
+                referenceId:
+                    existingSale._id,
+
+                referenceType:
+                    "SALE",
             });
 
         if (inventoryTransaction) {
-            inventoryTransaction.quantity = newQuantity;
+            inventoryTransaction.quantity =
+                newQuantity;
 
             await inventoryTransaction.save();
         }
 
+
         return existingSale;
+
     } catch (error) {
         throw error;
     }
 };
+
+
+// =====================================================
+// DELETE SALE
+// =====================================================
 
 const deleteSale = async (id) => {
     try {
         // Find sale
-        const existingSale = await Sale.findById(id);
+        const existingSale =
+            await Sale.findById(id);
 
         if (!existingSale) {
-            throw new Error("Sale not found");
+            throw new Error(
+                "Sale not found"
+            );
         }
+
 
         // Find product
-        const product = await Product.findById(
-            existingSale.product
-        );
+        const product =
+            await Product.findById(
+                existingSale.product
+            );
 
         if (!product) {
-            throw new Error("Product not found");
+            throw new Error(
+                "Product not found"
+            );
         }
 
-        // Restore product stock
-        product.stock += existingSale.quantity;
+
+        // -----------------------------
+        // Restore Product Stock
+        // -----------------------------
+
+        product.stock +=
+            existingSale.quantity;
 
         await product.save();
 
-        // Delete sale
+
+        // -----------------------------
+        // Delete Sale
+        // -----------------------------
+
         await Sale.findByIdAndDelete(id);
 
-        // Delete related inventory transaction
+
+        // -----------------------------
+        // Delete Inventory Transaction
+        // -----------------------------
+
         await InventoryTransaction.deleteOne({
-            referenceId: existingSale._id,
-            referenceType: "SALE",
+            referenceId:
+                existingSale._id,
+
+            referenceType:
+                "SALE",
         });
 
+
         return existingSale;
+
     } catch (error) {
         throw error;
     }
 };
+
+
+// =====================================================
+// EXPORTS
+// =====================================================
 
 module.exports = {
     createSale,

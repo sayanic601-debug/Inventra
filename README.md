@@ -1,116 +1,135 @@
-📦 Inventra - ERP Inventory Management System
+# 📦 Inventra
 
-A backend-based ERP Inventory Management System built using Node.js, Express.js, and MongoDB.
-It helps manage products, suppliers, purchases, sales, stock tracking, inventory transactions, and business analytics.
+### Electronics Retail Inventory Management System
 
-🚀 Features
+Inventra is a backend-based inventory management system designed for electronics retail businesses. It helps manage products, categories, suppliers, customers, purchases, sales, and inventory in one centralized system.
 
-🔐 Authentication
+The system automatically updates product stock when purchases and sales are recorded and provides dashboard insights for monitoring inventory and business activity.
 
-- JWT based authentication
-- Protected API routes
+---
 
-📦 Product Management
+## ✨ Features
 
-- Product CRUD operations
-- Stock and minimum stock tracking
+- 🔐 JWT-based authentication
+- 📦 Product management
+- 🏷️ Category management
+- 🏭 Supplier management
+- 👥 Customer management
+- 🛒 Purchase management
+- 💰 Sales management
+- 📊 Inventory and stock tracking
+- 🔄 Automatic stock updates
+- ⚠️ Low-stock monitoring
+- 📈 Dashboard with business insights
+- 🔎 Search, filtering, sorting, and pagination
+- 📋 Customer purchase history
+- 📝 Inventory transaction tracking
 
-🚚 Supplier Management
+---
 
-- Supplier CRUD operations
-- Supplier-product management
+## 🛠️ Tech Stack
 
-🛒 Purchase Management
+- **Backend:** Node.js, Express.js
+- **Database:** MongoDB
+- **ODM:** Mongoose
+- **Authentication:** JWT
+- **API Testing:** Postman
+- **Version Control:** Git, GitHub
+- **Deployment:** Render
 
-- Create, update, delete purchases
-- Automatic stock increase
-- Purchase transaction tracking
+---
 
-💰 Sales Management
+## 🏗️ Architecture
 
-- Create, update, delete sales
-- Automatic stock deduction
-- Sales transaction tracking
+```text
+Routes
+   ↓
+Middleware
+   ↓
+Controllers
+   ↓
+Services
+   ↓
+Models
+   ↓
+MongoDB
 
-📊 Inventory & Dashboard
 
-- Stock In / Stock Out history
-- Product-wise inventory tracking
-- Dashboard summary
-- Low stock products
-- Recent purchases and sales
-
-🛠️ Tech Stack
-
-Backend
-
-- Node.js
-- Express.js
-
-Database
-
-- MongoDB
-- Mongoose
-
-Authentication
-
-- JWT
-
-Tools
-
-- Postman
-- Git & GitHub
-
-📂 Project Structure
-
-src/
-├── config/
-├── controllers/
-├── middleware/
-├── models/
-├── routes/
-├── services/
-├── utils/
-└── validators/
-
-app.js
-server.js
+---
 
 ⚙️ Installation
 
-Clone the repository:
+Clone the repository
 
-git clone <repository-url>
+git clone <YOUR_REPOSITORY_URL>
+cd Inventra
 
-Install dependencies:
+Install dependencies
 
 npm install
 
-Create ".env" file:
+Configure environment variables
+
+Create a .env file:
 
 PORT=5000
-MONGODB_URI=your_mongodb_uri
-JWT_SECRET=your_secret_key
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
 
-Run the project:
+Run the application
 
 npm run dev
 
-📌 API Modules
+Or:
 
-- Authentication
-- Products
-- Categories
-- Suppliers
-- Purchases
-- Sales
-- Inventory Transactions
-- Dashboard
+node server.js
 
-🔮 Future Improvements
+The server will run on:
 
-- Role Based Access Control
-- Invoice Generation
-- Advanced Reports
-- PDF/Excel Export
-- Customer Management
+http://localhost:5000
+
+
+---
+
+🧪 API Testing
+
+The APIs can be tested using Postman.
+
+Main modules:
+
+Authentication
+
+Products
+
+Categories
+
+Suppliers
+
+Customers
+
+Purchases
+
+Sales
+
+Inventory
+
+Dashboard
+
+
+Protected APIs require a JWT Bearer Token:
+
+Authorization: Bearer YOUR_JWT_TOKEN
+
+
+---
+
+🚀 Deployment
+
+The application can be deployed using platforms such as Render.
+
+Required production environment variables:
+
+PORT=5000
+MONGO_URI=your_production_mongodb_connection_string
+JWT_SECRET=your_production_jwt_secret
+```

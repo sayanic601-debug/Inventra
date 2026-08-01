@@ -19,13 +19,19 @@ const createSale = async (req, res) => {
 
 const getAllSales = async (req, res) => {
     try {
-        const sales = await saleService.getAllSales();
+        const result =
+            await saleService.getAllSales(req.query);
 
         res.status(200).json({
             success: true,
-            count: sales.length,
-            data: sales,
+            count: result.sales.length,
+            totalSales: result.totalSales,
+            currentPage: result.currentPage,
+            totalPages: result.totalPages,
+            limit: result.limit,
+            data: result.sales,
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,

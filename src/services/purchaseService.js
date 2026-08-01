@@ -3,9 +3,18 @@ const Product = require("../models/Product");
 const Supplier = require("../models/Supplier");
 const InventoryTransaction = require("../models/InventoryTransaction");
 
+// =====================================================
+// CREATE PURCHASE
+// =====================================================
+
 const createPurchase = async (purchaseData) => {
     try {
-        const { product, supplier, quantity, purchasePrice } = purchaseData;
+        const {
+            product,
+            supplier,
+            quantity,
+            purchasePrice,
+        } = purchaseData;
 
         // Check product exists
         const existingProduct = await Product.findById(product);
@@ -41,33 +50,277 @@ const createPurchase = async (purchaseData) => {
 
         await existingProduct.save();
 
-        //  Create Inventory transaction 
+        // Create inventory transaction
         await InventoryTransaction.create({
-            product: product,
+            product,
             type: "STOCK_IN",
-            quantity: quantity,
+            quantity,
             referenceType: "PURCHASE",
             referenceId: purchase._id,
             note: "Stock added through purchase",
         });
 
         return purchase;
+
     } catch (error) {
         throw error;
     }
 };
 
-const getAllPurchases = async () => {
-    const purchases = await Purchase.find()
-        .populate("product", "name")
-        .populate("supplier", "name companyName");
-    return purchases;
+
+// =====================================================
+// GET ALL PURCHASES
+// Supports:
+// - Search by Product Name / SKU
+// - Product Filter
+// - Supplier Filter
+// - Date Range Filter
+// - Sorting
+// - Pagination
+// =====================================================
+
+const getAllPurchases = async (query = {}) => {
+    try {
+        const filter = {};
+
+        // -----------------------------
+        // Pagination
+        // -----------------------------
+
+        const page = Math.max(
+            Number(query.page) || 1,
+            1
+        );
+
+        const limit = Math.max(
+            Number(query.limit) || 10,
+            1
+        );
+
+        const skip = (page - 1) * limit;
+
+
+        // -----------------------------
+        // Search by Product Name / SKU
+        // -----------------------------
+
+        if (query.search) {
+
+            const matchingProducts = await Product.find({
+                $or: [
+                    {
+                        name: {
+                            $regex: query.search,
+                            $options: "i",
+                        },
+                    },
+                    {
+                        sku: {
+                            $regex: query.search,
+                            $options: "i",
+                        },
+                    },
+                ],
+            }).select("_id");
+
+            const productIds = matchingProducts.map(
+                (product) => product._id
+            );
+
+            // If no products match search
+            if (productIds.length === 0) {
+                return {
+                    purchases: [],
+                    totalPurchases: 0,
+                    currentPage: page,
+                    totalPages: 0,
+                    limit,
+                };
+            }
+
+            filter.product = {
+                $in: productIds,
+            };
+        }
+
+
+        // -----------------------------
+        // Filter by Product ID
+        // -----------------------------
+
+        if (query.product) {
+            filter.product = query.product;
+        }
+
+
+        // -----------------------------
+        // Filter by Supplier ID
+        // -----------------------------
+
+        if (query.supplier) {
+            filter.supplier = query.supplier;
+        }
+
+
+        // -----------------------------
+        // Filter by Status
+        // -----------------------------
+        if (query.status) {
+            filter.status = query.status;
+        }
+
+
+        // -----------------------------
+        // Date Range Filter
+        // -----------------------------
+        // Assuming Purchase model has
+        // purchaseDate field.
+        // If not, use createdAt instead.
+        // -----------------------------
+
+        if (query.startDate || query.endDate) {
+
+            filter.purchaseDate = {};
+
+            if (query.startDate) {
+
+                const startDate = new Date(
+                    query.startDate
+                );
+
+                filter.purchaseDate.$gte = startDate;
+            }
+
+            if (query.endDate) {
+
+                const endDate = new Date(
+                    query.endDate
+                );
+
+                // Include complete end date
+                endDate.setHours(
+                    23,
+                    59,
+                    59,
+                    999
+                );
+
+                filter.purchaseDate.$lte = endDate;
+            }
+        }
+
+
+        // -----------------------------
+        // Sorting
+        // -----------------------------
+
+        let sortOption = {
+            purchaseDate: -1,
+        };
+
+        if (query.sort === "newest") {
+            sortOption = {
+                purchaseDate: -1,
+            };
+        }
+
+        if (query.sort === "oldest") {
+            sortOption = {
+                purchaseDate: 1,
+            };
+        }
+
+        if (query.sort === "price_asc") {
+            sortOption = {
+                purchasePrice: 1,
+            };
+        }
+
+        if (query.sort === "price_desc") {
+            sortOption = {
+                purchasePrice: -1,
+            };
+        }
+
+        if (query.sort === "amount_asc") {
+            sortOption = {
+                totalAmount: 1,
+            };
+        }
+
+        if (query.sort === "amount_desc") {
+            sortOption = {
+                totalAmount: -1,
+            };
+        }
+
+
+
+
+        // -----------------------------
+        // Count Total Matching Purchases
+        // -----------------------------
+
+        const totalPurchases =
+            await Purchase.countDocuments(filter);
+
+
+        // -----------------------------
+        // Get Purchases
+        // -----------------------------
+
+        const purchases = await Purchase.find(filter)
+            .populate(
+                "product",
+                "name sku"
+            )
+            .populate(
+                "supplier",
+                "name companyName"
+            )
+            .sort(sortOption)
+            .skip(skip)
+            .limit(limit);
+
+
+        // -----------------------------
+        // Calculate Total Pages
+        // -----------------------------
+
+        const totalPages = Math.ceil(
+            totalPurchases / limit
+        );
+
+
+        return {
+            purchases,
+            totalPurchases,
+            currentPage: page,
+            totalPages,
+            limit,
+        };
+
+    } catch (error) {
+        throw error;
+    }
 };
 
+
+// =====================================================
+// GET PURCHASE BY ID
+// =====================================================
+
 const getPurchaseById = async (id) => {
+
     const purchase = await Purchase.findById(id)
-        .populate("product", "name")
-        .populate("supplier", "name companyName");
+        .populate(
+            "product",
+            "name sku"
+        )
+        .populate(
+            "supplier",
+            "name companyName"
+        );
 
     if (!purchase) {
         throw new Error("Purchase not found");
@@ -76,72 +329,140 @@ const getPurchaseById = async (id) => {
     return purchase;
 };
 
-const updatePurchase = async (id, purchaseData) => {
+
+// =====================================================
+// UPDATE PURCHASE
+// =====================================================
+
+const updatePurchase = async (
+    id,
+    purchaseData
+) => {
     try {
-        const existingPurchase = await Purchase.findById(id);
+
+        // Find existing purchase
+        const existingPurchase =
+            await Purchase.findById(id);
 
         if (!existingPurchase) {
             throw new Error("Purchase not found");
         }
 
-        const product = await Product.findById(existingPurchase.product);
+
+        // Find product
+        const product =
+            await Product.findById(
+                existingPurchase.product
+            );
 
         if (!product) {
             throw new Error("Product not found");
         }
 
-        const oldQuantity = existingPurchase.quantity;
+
+        // -----------------------------
+        // Calculate Quantity Difference
+        // -----------------------------
+
+        const oldQuantity =
+            existingPurchase.quantity;
 
         const newQuantity =
             purchaseData.quantity !== undefined
                 ? purchaseData.quantity
                 : oldQuantity;
 
-        // Calculate quantity difference
-        const quantityDifference = newQuantity - oldQuantity;
+        const quantityDifference =
+            newQuantity - oldQuantity;
 
-        // Update product stock
+
+        // -----------------------------
+        // Update Product Stock
+        // -----------------------------
+
         product.stock += quantityDifference;
 
-        // Update purchase price
-        if (purchaseData.purchasePrice !== undefined) {
-            product.purchasePrice = purchaseData.purchasePrice;
+
+        // -----------------------------
+        // Update Purchase Price
+        // -----------------------------
+
+        if (
+            purchaseData.purchasePrice !== undefined
+        ) {
+            product.purchasePrice =
+                purchaseData.purchasePrice;
         }
 
         await product.save();
 
-        // Update purchase record
-        existingPurchase.quantity = newQuantity;
 
-        if (purchaseData.purchasePrice !== undefined) {
-            existingPurchase.purchasePrice = purchaseData.purchasePrice;
+        // -----------------------------
+        // Update Purchase Record
+        // -----------------------------
+
+        existingPurchase.quantity =
+            newQuantity;
+
+        if (
+            purchaseData.purchasePrice !== undefined
+        ) {
+            existingPurchase.purchasePrice =
+                purchaseData.purchasePrice;
         }
 
+
+        // Recalculate total amount
         existingPurchase.totalAmount =
-            existingPurchase.quantity * existingPurchase.purchasePrice;
+            existingPurchase.quantity *
+            existingPurchase.purchasePrice;
 
         await existingPurchase.save();
 
-        // Update inventory transaction
+
+        // -----------------------------
+        // Update Inventory Transaction
+        // -----------------------------
+
         const inventoryTransaction =
             await InventoryTransaction.findOne({
-                referenceId: existingPurchase._id,
-                referenceType: "PURCHASE",
+                referenceId:
+                    existingPurchase._id,
+
+                referenceType:
+                    "PURCHASE",
             });
 
+
         if (inventoryTransaction) {
-            inventoryTransaction.quantity = newQuantity;
+
+            inventoryTransaction.quantity =
+                newQuantity;
+
             await inventoryTransaction.save();
+
         } else {
+
             await InventoryTransaction.create({
-                product: existingPurchase.product,
+                product:
+                    existingPurchase.product,
+
                 type: "STOCK_IN",
-                quantity: newQuantity,
-                referenceType: "PURCHASE",
-                referenceId: existingPurchase._id,
-                note: "Stock added through purchase update",
+
+                quantity:
+                    newQuantity,
+
+                referenceType:
+                    "PURCHASE",
+
+                referenceId:
+                    existingPurchase._id,
+
+                note:
+                    "Stock added through purchase update",
             });
         }
+
 
         return existingPurchase;
 
@@ -150,34 +471,56 @@ const updatePurchase = async (id, purchaseData) => {
     }
 };
 
+
+// =====================================================
+// DELETE PURCHASE
+// =====================================================
+
 const deletePurchase = async (id) => {
     try {
-        const existingPurchase = await Purchase.findById(id);
+
+        // Find existing purchase
+        const existingPurchase =
+            await Purchase.findById(id);
 
         if (!existingPurchase) {
             throw new Error("Purchase not found");
         }
 
-        const product = await Product.findById(existingPurchase.product);
+
+        // Find product
+        const product =
+            await Product.findById(
+                existingPurchase.product
+            );
 
         if (!product) {
             throw new Error("Product not found");
         }
 
-        // Check if enough stock is available to reverse the purchase
-        if (product.stock < existingPurchase.quantity) {
+
+        // Check if enough stock is available
+        // to reverse the purchase
+        if (
+            product.stock <
+            existingPurchase.quantity
+        ) {
             throw new Error(
                 "Cannot delete purchase because current stock is less than purchased quantity"
             );
         }
 
-        // Reverse the stock
-        product.stock -= existingPurchase.quantity;
+
+        // Reverse stock
+        product.stock -=
+            existingPurchase.quantity;
 
         await product.save();
 
+
         // Delete purchase record
         await Purchase.findByIdAndDelete(id);
+
 
         // Delete related inventory transaction
         await InventoryTransaction.deleteOne({
@@ -185,13 +528,18 @@ const deletePurchase = async (id) => {
             referenceType: "PURCHASE",
         });
 
+
         return existingPurchase;
+
     } catch (error) {
         throw error;
     }
 };
 
 
+// =====================================================
+// EXPORTS
+// =====================================================
 
 module.exports = {
     createPurchase,
