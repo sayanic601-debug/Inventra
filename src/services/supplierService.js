@@ -36,7 +36,7 @@ const updateSupplier = async (id, supplierData) => {
     const supplier = await Supplier.findByIdAndUpdate(
         id,
         supplierData,
-        { new: true,
+        { returnDocument: 'after',
           runValidators: true }
     );
 
