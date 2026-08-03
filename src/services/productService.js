@@ -215,7 +215,7 @@ const updateProduct = async (
             id,
             productData,
             {
-                new: true,
+                returnDocument: 'after',
                 runValidators: true,
             }
         );
