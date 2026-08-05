@@ -1,6 +1,6 @@
 const express = require("express");
 const categoryController = require("../controllers/categoryController");
-const protect = require("../middleware/authMiddleware");
+const { protect, authorize } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -45,7 +45,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/", protect, categoryController.createCategory);
+router.post("/", protect,authorize("admin","manager","staff"), categoryController.createCategory);
 
 /**
  * @swagger
@@ -60,7 +60,7 @@ router.post("/", protect, categoryController.createCategory);
  *       500:
  *         description: Server error
  */
-router.get("/", categoryController.getAllCategories);
+router.get("/", protect,authorize("admin","manager","staff"), categoryController.getAllCategories);
 
 /**
  * @swagger
@@ -88,7 +88,7 @@ router.get("/", categoryController.getAllCategories);
  *       500:
  *         description: Server error
  */
-router.get("/:id", protect, categoryController.getCategoryById);
+router.get("/:id", protect,authorize("admin","manager","staff"), categoryController.getCategoryById);
 
 /**
  * @swagger
@@ -129,7 +129,7 @@ router.get("/:id", protect, categoryController.getCategoryById);
  *       500:
  *         description: Server error
  */
-router.put("/:id", protect, categoryController.updateCategory);
+router.put("/:id", protect,authorize("admin","manager"), categoryController.updateCategory);
 
 /**
  * @swagger
@@ -157,6 +157,6 @@ router.put("/:id", protect, categoryController.updateCategory);
  *       500:
  *         description: Server error
  */
-router.delete("/:id", protect, categoryController.deleteCategory);
+router.delete("/:id", protect,authorize("admin"), categoryController.deleteCategory);
 
 module.exports = router;

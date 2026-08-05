@@ -1,16 +1,24 @@
 const mongoose = require("mongoose");
 
+// =====================================================
+// Category Schema
+// =====================================================
+
 const categorySchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "Category name is required"],
       unique: true,
       trim: true,
+      minlength: 2,
+      maxlength: 100,
     },
 
     description: {
       type: String,
+      trim: true,
+      maxlength: 500,
       default: "",
     },
 
@@ -24,5 +32,9 @@ const categorySchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// =====================================================
+// Export Model
+// =====================================================
 
 module.exports = mongoose.model("Category", categorySchema);

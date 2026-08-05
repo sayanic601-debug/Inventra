@@ -1,6 +1,6 @@
 const express = require("express");
 const dashboardController = require("../controllers/dashboardController");
-const protect = require("../middleware/authMiddleware");
+const { protect,authorize } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -30,7 +30,7 @@ const router = express.Router();
  */
 router.get(
     "/summary",
-    protect,
+    protect,authorize("admin","manager","staff"),
     dashboardController.getDashboardSummary
 );
 
@@ -53,7 +53,7 @@ router.get(
  */
 router.get(
     "/low-stock",
-    protect,
+    protect,authorize("admin","manager","staff"),
     dashboardController.getLowStockProducts
 );
 
@@ -76,7 +76,7 @@ router.get(
  */
 router.get(
     "/recent-purchases",
-    protect,
+    protect,authorize("admin","manager","staff"),
     dashboardController.getRecentPurchases
 );
 
@@ -99,7 +99,7 @@ router.get(
  */
 router.get(
     "/recent-sales",
-    protect,
+    protect,authorize("admin","manager","staff"),
     dashboardController.getRecentSales
 );
 
@@ -122,7 +122,7 @@ router.get(
  */
 router.get(
     "/top-selling-products",
-    protect,
+    protect,authorize("admin","manager","staff"),
     dashboardController.getTopSellingProducts
 );
 
@@ -145,7 +145,7 @@ router.get(
  */
 router.get(
     "/recent-customers",
-    protect,
+    protect,authorize("admin","manager","staff"),
     dashboardController.getRecentCustomers
 );
 

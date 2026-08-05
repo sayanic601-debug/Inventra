@@ -1,6 +1,6 @@
 const express = require("express");
 const purchaseController = require("../controllers/purchaseController");
-const protect = require("../middleware/authMiddleware");
+const { protect, authorize } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -60,7 +60,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/", protect, purchaseController.createPurchase);
+router.post("/", protect, authorize("admin", "manager"), purchaseController.createPurchase);
 
 /**
  * @swagger
@@ -160,7 +160,7 @@ router.post("/", protect, purchaseController.createPurchase);
  *       500:
  *         description: Server error
  */
-router.get("/", protect, purchaseController.getAllPurchases);
+router.get("/", protect, authorize("admin", "manager", "staff"), purchaseController.getAllPurchases);
 
 /**
  * @swagger
@@ -189,7 +189,7 @@ router.get("/", protect, purchaseController.getAllPurchases);
  *       500:
  *         description: Server error
  */
-router.get("/:id", protect, purchaseController.getPurchaseById);
+router.get("/:id", protect, authorize("admin", "manager", "staff"), purchaseController.getPurchaseById);
 
 /**
  * @swagger
@@ -235,7 +235,7 @@ router.get("/:id", protect, purchaseController.getPurchaseById);
  *       500:
  *         description: Server error
  */
-router.put("/:id", protect, purchaseController.updatePurchase);
+router.put("/:id", protect, authorize("admin", "manager"), purchaseController.updatePurchase);
 
 /**
  * @swagger
@@ -266,6 +266,6 @@ router.put("/:id", protect, purchaseController.updatePurchase);
  *       500:
  *         description: Server error
  */
-router.delete("/:id", protect, purchaseController.deletePurchase);
+router.delete("/:id", protect, authorize("admin"), purchaseController.deletePurchase);
 
 module.exports = router;

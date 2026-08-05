@@ -1,7 +1,7 @@
 const express = require("express");
 
 const customerController = require("../controllers/customerController");
-const protect = require("../middleware/authMiddleware");
+const { protect, authorize } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -55,7 +55,7 @@ const router = express.Router();
  */
 router.post(
     "/",
-    protect,
+    protect,authorize("admin", "manager", "staff"),
     customerController.createCustomer
 );
 
@@ -96,7 +96,7 @@ router.post(
  */
 router.get(
     "/",
-    protect,
+    protect,authorize("admin", "manager", "staff"),
     customerController.getAllCustomers
 );
 
@@ -128,7 +128,7 @@ router.get(
  */
 router.get(
     "/:id",
-    protect,
+    protect,authorize("admin", "manager", "staff"),
     customerController.getCustomerById
 );
 
@@ -160,7 +160,7 @@ router.get(
  */
 router.get(
     "/:id/purchase-history",
-    protect,
+    protect,authorize("admin", "manager", "staff"),
     customerController.getCustomerPurchaseHistory
 );
 
@@ -192,7 +192,7 @@ router.get(
  */
 router.get(
     "/:id/summary",
-    protect,
+    protect,authorize("admin", "manager", "staff"),
     customerController.getCustomerSummary
 );
 
@@ -243,7 +243,7 @@ router.get(
  */
 router.put(
     "/:id",
-    protect,
+    protect,authorize("admin", "manager", "staff"),
     customerController.updateCustomer
 );
 
@@ -275,7 +275,7 @@ router.put(
  */
 router.delete(
     "/:id",
-    protect,
+    protect,authorize("admin"),
     customerController.deleteCustomer
 );
 
