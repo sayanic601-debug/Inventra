@@ -1,135 +1,300 @@
 # 📦 Inventra
 
-### Electronics Retail Inventory Management System
+> A RESTful Backend API for an Electronics Retail Inventory Management System built with Node.js, Express.js, MongoDB, and Mongoose.
 
-Inventra is a backend-based inventory management system designed for electronics retail businesses. It helps manage products, categories, suppliers, customers, purchases, sales, and inventory in one centralized system.
+---
 
-The system automatically updates product stock when purchases and sales are recorded and provides dashboard insights for monitoring inventory and business activity.
+## 📖 Overview
+
+Inventra is a backend inventory management system designed for electronics retail stores. It provides secure authentication, role-based access control, product management, supplier management, customer management, purchase and sales tracking, inventory transaction logging, and dashboard analytics.
+
+The project follows a modular architecture using controllers, services, middleware, and models, making it scalable and easy to maintain.
 
 ---
 
 ## ✨ Features
 
-- 🔐 JWT-based authentication
-- 📦 Product management
-- 🏷️ Category management
-- 🏭 Supplier management
-- 👥 Customer management
-- 🛒 Purchase management
-- 💰 Sales management
-- 📊 Inventory and stock tracking
-- 🔄 Automatic stock updates
-- ⚠️ Low-stock monitoring
-- 📈 Dashboard with business insights
-- 🔎 Search, filtering, sorting, and pagination
-- 📋 Customer purchase history
-- 📝 Inventory transaction tracking
+- 🔐 JWT Authentication & Authorization
+- 👥 Role-Based Access Control (Admin, Manager, Staff)
+- 📂 Category Management
+- 🏢 Supplier Management
+- 📦 Product Management
+- 👤 Customer Management
+- 🛒 Purchase Management
+- 💰 Sales Management
+- 📊 Dashboard Analytics
+- 📋 Inventory Transaction Tracking
+- 📖 Swagger API Documentation
+- ✅ Input Validation
+- ❌ Global Error Handling
+- 🗄️ MongoDB Database Integration
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Backend:** Node.js, Express.js
-- **Database:** MongoDB
-- **ODM:** Mongoose
-- **Authentication:** JWT
-- **API Testing:** Postman
-- **Version Control:** Git, GitHub
-- **Deployment:** Render
+### Backend
+
+- Node.js
+- Express.js
+
+### Database
+
+- MongoDB
+- Mongoose
+
+### Authentication
+
+- JSON Web Token (JWT)
+- bcrypt
+
+### API Documentation
+
+- Swagger UI
+- swagger-jsdoc
+
+### Tools
+
+- Postman
+- Git
+- GitHub
+- Nodemon
 
 ---
 
-## 🏗️ Architecture
+## 📁 Project Structure
 
-```text
-Routes
-   ↓
-Middleware
-   ↓
-Controllers
-   ↓
-Services
-   ↓
-Models
-   ↓
-MongoDB
-
-
----
-
-⚙️ Installation
-
-Clone the repository
-
-git clone <YOUR_REPOSITORY_URL>
-cd Inventra
-
-Install dependencies
-
-npm install
-
-Configure environment variables
-
-Create a .env file:
-
-PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-
-Run the application
-
-npm run dev
-
-Or:
-
-node server.js
-
-The server will run on:
-
-http://localhost:5000
-
-
----
-
-🧪 API Testing
-
-The APIs can be tested using Postman.
-
-Main modules:
-
-Authentication
-
-Products
-
-Categories
-
-Suppliers
-
-Customers
-
-Purchases
-
-Sales
-
-Inventory
-
-Dashboard
-
-
-Protected APIs require a JWT Bearer Token:
-
-Authorization: Bearer YOUR_JWT_TOKEN
-
-
----
-
-🚀 Deployment
-
-The application can be deployed using platforms such as Render.
-
-Required production environment variables:
-
-PORT=5000
-MONGO_URI=your_production_mongodb_connection_string
-JWT_SECRET=your_production_jwt_secret
 ```
+inventra/
+│
+├── src/
+│   ├── config/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── services/
+│   ├── utils/
+│   ├── app.js
+│   └── server.js
+│
+├── swagger.js
+├── package.json
+├── .env.example
+└── README.md
+```
+
+---
+
+## 🔑 User Roles
+
+The application supports the following user roles:
+
+- Admin
+- Manager
+- Staff
+
+Role-based authorization ensures users can access only the resources permitted for their role.
+
+---
+
+## 📚 API Modules
+
+### Authentication
+
+- Register User
+- Login User
+- Get Profile
+
+### Categories
+
+- Create Category
+- Get All Categories
+- Get Category By ID
+- Update Category
+- Delete Category
+
+### Suppliers
+
+- Create Supplier
+- Get All Suppliers
+- Get Supplier By ID
+- Update Supplier
+- Delete Supplier
+
+### Products
+
+- Create Product
+- Get All Products
+- Get Product By ID
+- Update Product
+- Delete Product
+
+### Customers
+
+- Create Customer
+- Get All Customers
+- Get Customer By ID
+- Update Customer
+- Delete Customer
+
+### Purchases
+
+- Create Purchase
+- Get All Purchases
+- Get Purchase By ID
+- Update Purchase
+- Delete Purchase
+
+### Sales
+
+- Create Sale
+- Get All Sales
+- Get Sale By ID
+- Update Sale
+- Delete Sale
+
+### Inventory Transactions
+
+- Get All Transactions
+- Get Transaction By ID
+
+### Dashboard
+
+- Dashboard Summary
+- Recent Sales
+- Recent Purchases
+- Low Stock Products
+- Total Products
+- Total Categories
+- Total Suppliers
+- Total Customers
+
+---
+
+## 🔐 Authentication
+
+Protected endpoints require a Bearer Token.
+
+Example:
+
+```
+Authorization: Bearer <your_jwt_token>
+```
+
+---
+
+## 📖 API Documentation
+
+Swagger Documentation:
+
+```
+http://localhost:5000/api-docs
+```
+
+---
+
+## ⚙️ Installation
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/your-username/inventra.git
+```
+
+### 2. Navigate to the project directory
+
+```bash
+cd inventra
+```
+
+### 3. Install dependencies
+
+```bash
+npm install
+```
+
+### 4. Create a `.env` file
+
+```env
+PORT=5000
+
+MONGO_URI=your_mongodb_connection_string
+
+JWT_SECRET=your_secret_key
+```
+
+### 5. Start the development server
+
+```bash
+npm run dev
+```
+
+The server will start at:
+
+```
+http://localhost:5000
+```
+
+---
+
+## 🧪 API Testing
+
+The APIs have been tested using:
+
+- Swagger UI
+- Postman
+
+Testing includes:
+
+- Authentication
+- Authorization
+- CRUD Operations
+- Validation
+- Error Handling
+- Purchase & Sales Flow
+- Inventory Updates
+- Dashboard Verification
+
+---
+
+## 📦 Standard API Response
+
+### Success
+
+```json
+{
+  "success": true,
+  "message": "Operation completed successfully",
+  "data": {}
+}
+```
+
+### Error
+
+```json
+{
+  "success": false,
+  "message": "Error message"
+}
+```
+
+---
+
+## 🚀 Future Enhancements
+
+- Product Image Upload
+- Barcode & QR Code Support
+- Search & Filtering
+- Pagination
+- Sales Report
+- Purchase Report
+- Excel/PDF Export
+- Email Notifications
+- Docker Support
+- Redis Caching
+- Unit Testing
+- Integration Testing
+- CI/CD Pipeline
+
+---

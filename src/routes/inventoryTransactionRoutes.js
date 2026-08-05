@@ -1,6 +1,6 @@
 const express = require("express");
 const inventoryTransactionController = require("../controllers/inventoryTransactionController");
-const protect = require("../middleware/authMiddleware");
+const { protect,authorize } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -40,7 +40,7 @@ const router = express.Router();
  */
 router.get(
     "/product/:productId/summary",
-    protect,
+    protect,authorize("admin","manager","staff"),
     inventoryTransactionController.getProductInventorySummary
 );
 
@@ -73,7 +73,7 @@ router.get(
  */
 router.get(
     "/product/:productId",
-    protect,
+    protect,authorize("admin","manager","staff"),
     inventoryTransactionController.getTransactionsByProduct
 );
 
@@ -96,7 +96,7 @@ router.get(
  */
 router.get(
     "/",
-    protect,
+    protect,authorize("admin","manager","staff"),
     inventoryTransactionController.getAllTransactions
 );
 

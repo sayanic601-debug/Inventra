@@ -1,5 +1,9 @@
 const Category = require("../models/Category");
 
+// =====================================================
+// CREATE CATEGORY
+// =====================================================
+
 const createCategory = async (categoryData) => {
     const existingCategory = await Category.findOne({
         name: categoryData.name,
@@ -14,10 +18,21 @@ const createCategory = async (categoryData) => {
     return category;
 };
 
+// =====================================================
+// GET ALL CATEGORIES
+// =====================================================
+
 const getAllCategories = async () => {
-    const categories = await Category.find();
+    const categories = await Category.find().sort({
+        createdAt: -1,
+    });
+
     return categories;
 };
+
+// =====================================================
+// GET CATEGORY BY ID
+// =====================================================
 
 const getCategoryById = async (id) => {
     const category = await Category.findById(id);
@@ -25,24 +40,47 @@ const getCategoryById = async (id) => {
     if (!category) {
         throw new Error("Category not found");
     }
+
     return category;
 };
 
+// =====================================================
+// UPDATE CATEGORY
+// =====================================================
+
 const updateCategory = async (id, categoryData) => {
+
+    if (categoryData.name) {
+
+        const existingCategory = await Category.findOne({
+            name: categoryData.name,
+            _id: { $ne: id },
+        });
+
+        if (existingCategory) {
+            throw new Error("Category already exists");
+        }
+    }
+
     const category = await Category.findByIdAndUpdate(
         id,
         categoryData,
         {
-            returnDocument: "after",
-            runValidators: true
+            new: true,
+            runValidators: true,
         }
     );
 
     if (!category) {
         throw new Error("Category not found");
     }
+
     return category;
 };
+
+// =====================================================
+// DELETE CATEGORY
+// =====================================================
 
 const deleteCategory = async (id) => {
     const category = await Category.findByIdAndDelete(id);
@@ -50,13 +88,18 @@ const deleteCategory = async (id) => {
     if (!category) {
         throw new Error("Category not found");
     }
+
     return category;
 };
+
+// =====================================================
+// EXPORTS
+// =====================================================
 
 module.exports = {
     createCategory,
     getAllCategories,
     getCategoryById,
     updateCategory,
-    deleteCategory
+    deleteCategory,
 };

@@ -1,6 +1,6 @@
 const express = require("express");
 const saleController = require("../controllers/saleController");
-const protect = require("../middleware/authMiddleware");
+const { protect, authorize }  = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -64,7 +64,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/", protect, saleController.createSale);
+router.post("/", protect,authorize("admin","manager","staff"), saleController.createSale);
 
 /**
  * @swagger
@@ -146,7 +146,7 @@ router.post("/", protect, saleController.createSale);
  *       500:
  *         description: Server error
  */
-router.get("/", protect, saleController.getAllSales);
+router.get("/", protect,authorize("admin","manager","staff"), saleController.getAllSales);
 
 /**
  * @swagger
@@ -175,7 +175,7 @@ router.get("/", protect, saleController.getAllSales);
  *       500:
  *         description: Server error
  */
-router.get("/:id", protect, saleController.getSaleBYId);
+router.get("/:id", protect,authorize("admin","manager","staff"), saleController.getSaleBYId);
 
 /**
  * @swagger
@@ -228,7 +228,7 @@ router.get("/:id", protect, saleController.getSaleBYId);
  *       500:
  *         description: Server error
  */
-router.put("/:id", protect, saleController.updateSale);
+router.put("/:id", protect,authorize("admin","manager"), saleController.updateSale);
 
 /**
  * @swagger
@@ -257,6 +257,6 @@ router.put("/:id", protect, saleController.updateSale);
  *       500:
  *         description: Server error
  */
-router.delete("/:id", protect, saleController.deleteSale);
+router.delete("/:id", protect,authorize("admin"), saleController.deleteSale);
 
 module.exports = router;
